@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Light Me</string>
+    <string name="action_settings">About</string>
+    <string name="flashlight_not_available">Oooops! The flashlight is not available on your device.</string>
+    <string name="alert">Alert!</string>
+    <string name="ok">OK</string>
+    <string name="mute">Muted</string>
+    <string name="unmute">Unmuted</string>
+    <string name="about">About</string>
+    <string name="developed">Developed with care and love</string>
+    <string name="by">by Tony L.</string>
+    <string name="app_for">Light Me for Android v1.0</string>
+    <string name="permissions_denied">The Camera permissions were not granted, the operation is aborted.</string>
+</resources>
