@@ -36,7 +36,7 @@ import static android.hardware.Camera.Parameters.FLASH_MODE_ON;
 import static android.hardware.Camera.Parameters.FLASH_MODE_TORCH;
 import static android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION;
 import static android.media.AudioAttributes.USAGE_GAME;
-import static android.media.AudioManager.STREAM_MUSIC;
+import static android.media.AudioManager.STREAM_SYSTEM;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.view.Gravity.BOTTOM;
 import static android.view.Gravity.CENTER_HORIZONTAL;
@@ -159,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements SoundPool.OnLoadC
 
     @SuppressWarnings("deprecation")
     private void createSoundPoolWithConstructor() {
-        soundPool = new SoundPool(1, STREAM_MUSIC, 0);
+        soundPool = new SoundPool(1, STREAM_SYSTEM, 0);
     }
 
     @TargetApi(LOLLIPOP)
