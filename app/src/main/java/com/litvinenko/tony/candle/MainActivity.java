@@ -18,17 +18,22 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.List;
 
 import static android.Manifest.permission.CAMERA;
 import static android.content.pm.PackageManager.FEATURE_CAMERA_FLASH;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.hardware.Camera.Parameters.*;
+import static android.hardware.Camera.Parameters.FLASH_MODE_OFF;
+import static android.hardware.Camera.Parameters.FLASH_MODE_ON;
+import static android.hardware.Camera.Parameters.FLASH_MODE_TORCH;
 import static android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION;
 import static android.media.AudioAttributes.USAGE_GAME;
 import static android.media.AudioManager.STREAM_MUSIC;
@@ -37,7 +42,7 @@ import static android.view.Gravity.BOTTOM;
 import static android.view.Gravity.CENTER_HORIZONTAL;
 import static com.litvinenko.tony.candle.R.color.colorBackground;
 
-public class MainActivity extends AppCompatActivity implements SoundPool.OnLoadCompleteListener{
+public class MainActivity extends AppCompatActivity implements SoundPool.OnLoadCompleteListener, SurfaceHolder.Callback {
     private int sound;
     private SoundPool soundPool;
     private Camera camera;
@@ -46,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements SoundPool.OnLoadC
     private FloatingActionButton muteButton;
     private FloatingActionButton unMuteButton;
     private boolean isMuted = false;
+    private SurfaceHolder holder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +60,10 @@ public class MainActivity extends AppCompatActivity implements SoundPool.OnLoadC
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        SurfaceView preview = (SurfaceView)findViewById(R.id.preview);
+        holder = preview.getHolder();
+        holder.addCallback(this);
 
         processMuteButtons();
         createSoundPull();
@@ -212,11 +222,11 @@ public class MainActivity extends AppCompatActivity implements SoundPool.OnLoadC
                         if(camera != null) {
                             camera.setParameters(parameters);
                             camera.startPreview();
-//                            try {
-//                                camera.setPreviewTexture(new SurfaceTexture(0));
-//                            } catch (IOException e) {
-//                                e.printStackTrace();
-//                            }
+                            try {
+                                camera.setPreviewDisplay(holder);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
 
                     }
@@ -300,5 +310,18 @@ public class MainActivity extends AppCompatActivity implements SoundPool.OnLoadC
         soundPool.release();
     }
 
+    @Override
+    public void surfaceCreated(SurfaceHolder surfaceHolder) {
 
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
+
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
+
+    }
 }
