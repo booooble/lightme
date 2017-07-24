@@ -103,7 +103,6 @@ public class MainActivity extends AppCompatActivity implements OnLoadCompleteLis
                         view.setBackgroundResource(colorBackground);
                         turnOffFlashlight();
                     }
-
             }
         });
     }
