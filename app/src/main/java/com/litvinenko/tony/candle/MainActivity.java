@@ -8,7 +8,7 @@ import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.media.AudioAttributes;
 import android.media.SoundPool;
-import android.os.Build;
+import android.media.SoundPool.OnLoadCompleteListener;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -19,9 +19,12 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceHolder;
+import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -37,20 +40,22 @@ import static android.hardware.Camera.Parameters.FLASH_MODE_TORCH;
 import static android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION;
 import static android.media.AudioAttributes.USAGE_GAME;
 import static android.media.AudioManager.STREAM_SYSTEM;
+import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.view.Gravity.BOTTOM;
 import static android.view.Gravity.CENTER_HORIZONTAL;
 import static com.litvinenko.tony.candle.R.color.colorBackground;
 
-public class MainActivity extends AppCompatActivity implements SoundPool.OnLoadCompleteListener, SurfaceHolder.Callback {
+public class MainActivity extends AppCompatActivity implements OnLoadCompleteListener, Callback {
+    private static final int SUCCESS = 1;
     private int sound;
+    private boolean isMuted = false;
     private SoundPool soundPool;
     private Camera camera;
     private Parameters parameters;
     private Switch switcher;
     private FloatingActionButton muteButton;
     private FloatingActionButton unMuteButton;
-    private boolean isMuted = false;
     private SurfaceHolder holder;
 
     @Override
@@ -61,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements SoundPool.OnLoadC
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        SurfaceView preview = (SurfaceView)findViewById(R.id.preview);
+        SurfaceView preview = (SurfaceView) findViewById(R.id.preview);
         holder = preview.getHolder();
         holder.addCallback(this);
 
@@ -73,20 +78,19 @@ public class MainActivity extends AppCompatActivity implements SoundPool.OnLoadC
             showCameraAlert(R.string.flashlight_not_available);
         } else {
             if (ContextCompat.checkSelfPermission(this, CAMERA) !=  PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{CAMERA}, 1);
+                ActivityCompat.requestPermissions(this, new String[]{CAMERA}, SUCCESS);
             } else {
                 camera = Camera.open();
             }
         }
-
-
     }
 
     private void processSwitcher() {
+        final View view = this.getWindow().getDecorView();
+
         switcher = (Switch) findViewById(R.id.switcher);
         switcher.setChecked(false);
-        final View view = this.getWindow().getDecorView();
-        switcher.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        switcher.setOnCheckedChangeListener(new OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                     if (isChecked)
@@ -105,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements SoundPool.OnLoadC
     }
 
     private void createSoundPull() {
-        if (Build.VERSION.SDK_INT >= LOLLIPOP) {
+        if (SDK_INT >= LOLLIPOP) {
             createSoundPoolWithBuilder();
         } else {
             createSoundPoolWithConstructor();
@@ -121,13 +125,14 @@ public class MainActivity extends AppCompatActivity implements SoundPool.OnLoadC
 
         unMuteButton.hide();
 
-        muteButton.setOnClickListener(new View.OnClickListener() {
+        muteButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 muteOnClick();
             }
         });
-        unMuteButton.setOnClickListener(new View.OnClickListener() {
+
+        unMuteButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 muteOnClick();
@@ -208,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements SoundPool.OnLoadC
                     parameters = camera.getParameters();
 
                     if (parameters != null) {
-                        List supportedFlashModes = parameters.getSupportedFlashModes();
+                        List<String> supportedFlashModes = parameters.getSupportedFlashModes();
 
                         if(supportedFlashModes.contains(FLASH_MODE_TORCH)) {
                             parameters.setFlashMode(FLASH_MODE_TORCH);
@@ -225,10 +230,9 @@ public class MainActivity extends AppCompatActivity implements SoundPool.OnLoadC
                             try {
                                 camera.setPreviewDisplay(holder);
                             } catch (IOException e) {
-                                e.printStackTrace();
+                                throw new RuntimeException("setPreviewDisplay failed");
                             }
                         }
-
                     }
                 }
             }
@@ -260,7 +264,7 @@ public class MainActivity extends AppCompatActivity implements SoundPool.OnLoadC
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case 1: {
+            case SUCCESS: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     camera = Camera.open();
                 } else {
@@ -272,19 +276,14 @@ public class MainActivity extends AppCompatActivity implements SoundPool.OnLoadC
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_about) {
             this.startActivity(new Intent (this, AboutActivity.class));
             return true;
